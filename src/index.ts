@@ -1,36 +1,49 @@
 import { SMTPServer } from "smtp-server";
+import sendEmail from "./sendMail";
 
-const server = new SMTPServer({
-  // we added next two config as right now we are not handling the sending part of the email, as in that case we also need to handle ssl certificates & all
+const receiveServer = new SMTPServer({
   allowInsecureAuth: true,
   authOptional: true,
 
   onConnect(session, callback) {
-    console.log("OnConnect session :", session);
-    callback(); // accepts the connection
-    // callback(new Error('Cannot accept the connection')) denies the connection
+    console.log("OnConnect session:", session);
+    callback();
   },
 
   onMailFrom(address, session, callback) {
-    console.log("onMailFrom :::", address, session.id);
+    console.log("onMailFrom:", address, session.id);
     callback();
   },
 
   onRcptTo(address, session, callback) {
-    console.log("onReceiptTo", address, session.id);
-    // here we need to add check for if the receipient email is correct or not, basically the user eg. akash@
+    console.log("onReceiptTo:", address, session.id);
     callback();
   },
 
   onData(stream, session, callback) {
+    let emailData = "";
+
     stream.on("data", (chunk) => {
-      // store it on the database, so we can see it on a interface
-      console.log("Receiving data :::", chunk.toString());
+      emailData += chunk.toString();
     });
-    stream.on("end", callback);
+
+    stream.on("end", () => {
+      console.log("Received email:", emailData);
+
+      // Store email in database
+      // Auto-reply example
+      sendEmail({
+        from: "hello@devakash.in",
+        to: "developer.akash8@gmail.com",
+        subject: "Message Received",
+        text: "Thank you for your email!",
+      });
+
+      callback();
+    });
   },
 });
 
-server.listen(25, () => {
+receiveServer.listen(25, () => {
   console.log("Server listening on port 25");
 });
