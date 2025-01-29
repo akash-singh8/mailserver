@@ -1,9 +1,27 @@
 import { SMTPServer } from "smtp-server";
 import sendEmail from "./sendMail";
+import { config } from "dotenv";
+config();
 
 const receiveServer = new SMTPServer({
   allowInsecureAuth: true,
   authOptional: true,
+
+  onAuth(auth, session, callback) {
+    console.log("Inside Auth Request :", session);
+    console.log("Auth object :", auth);
+
+    // Perform the credential check here:
+    if (
+      auth.username === process.env.USERNAME &&
+      auth.password === process.env.PASSWORD
+    ) {
+      return callback(null, { user: auth.username });
+    }
+
+    // If credentials fail, return an error
+    return callback(new Error("Invalid username or password"));
+  },
 
   onConnect(session, callback) {
     console.log("OnConnect session:", session);
@@ -34,7 +52,7 @@ const receiveServer = new SMTPServer({
       // Auto-reply example
       sendEmail({
         from: "hello@devakash.in",
-        to: "developer.akash8@gmail.com",
+        to: "cleverakash1@gmail.com",
         subject: "Message Received",
         text: "Thank you for your email!",
       });

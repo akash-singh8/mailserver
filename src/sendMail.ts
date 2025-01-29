@@ -2,11 +2,15 @@ import nodemailer from "nodemailer";
 
 // Configure your mail transporter (for sending)
 const transporter = nodemailer.createTransport({
-  host: "localhost", // Using your own server for sending
+  host: "18.215.159.195", // localhost or your server IP
   port: 25,
-  secure: false, // true for 465, false for other ports
+  secure: false, // or true if using TLS on port 465,
   tls: {
-    rejectUnauthorized: false, // For self-signed certificates
+    rejectUnauthorized: false, // Disable certificate verification
+  },
+  auth: {
+    user: "username",
+    pass: "password",
   },
 });
 
