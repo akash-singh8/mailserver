@@ -1,16 +1,20 @@
 import nodemailer from "nodemailer";
+import fs from "fs";
 
 // Configure your mail transporter (for sending)
 const transporter = nodemailer.createTransport({
   host: "18.215.159.195", // localhost or your server IP
-  port: 25,
-  secure: false, // or true if using TLS on port 465,
+  port: 465,
+  secure: true, // Enable TLS
   tls: {
-    rejectUnauthorized: false, // Disable certificate verification
+    key: fs.readFileSync("/etc/letsencrypt/live/mail.devakash.in/privkey.pem"),
+    cert: fs.readFileSync(
+      "/etc/letsencrypt/live/mail.devakash.in/fullchain.pem"
+    ),
   },
   auth: {
-    user: "username",
-    pass: "password",
+    user: process.env.USERNAME,
+    pass: process.env.PASSWORD,
   },
 });
 

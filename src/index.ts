@@ -1,11 +1,17 @@
 import { SMTPServer } from "smtp-server";
 import sendEmail from "./sendMail";
+import fs from "fs";
 import { config } from "dotenv";
 config();
 
 const receiveServer = new SMTPServer({
   allowInsecureAuth: true,
   authOptional: true,
+
+  // Enable TLS
+  secure: true,
+  key: fs.readFileSync("/etc/letsencrypt/live/mail.devakash.in/privkey.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/mail.devakash.in/fullchain.pem"),
 
   onAuth(auth, session, callback) {
     console.log("Inside Auth Request :", session);
@@ -62,6 +68,6 @@ const receiveServer = new SMTPServer({
   },
 });
 
-receiveServer.listen(25, () => {
-  console.log("Server listening on port 25");
+receiveServer.listen(465, () => {
+  console.log("Server listening on port 465 with TLS");
 });
