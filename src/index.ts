@@ -1,12 +1,13 @@
 import { SMTPServer } from "smtp-server";
-import sendEmail from "./sendMail";
 import fs from "fs";
 import { config } from "dotenv";
 config();
+import sendEmail from "./sendMail";
 
 const receiveServer = new SMTPServer({
   allowInsecureAuth: true,
   authOptional: true,
+  logger: true,
 
   // Enable TLS
   secure: true,
@@ -41,7 +42,15 @@ const receiveServer = new SMTPServer({
 
   onRcptTo(address, session, callback) {
     console.log("onReceiptTo:", address, session.id);
-    callback();
+    const recipientDomain = address.address.split("@")[1];
+
+    if (recipientDomain === "devakash.in") {
+      console.log("Local recipient:", address.address);
+      return callback();
+    }
+
+    // Reject emails for external domains
+    return callback(new Error("Relaying not allowed"));
   },
 
   onData(stream, session, callback) {
