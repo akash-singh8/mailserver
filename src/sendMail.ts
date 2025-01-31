@@ -3,7 +3,7 @@ import fs from "fs";
 
 // Configure your mail transporter (for sending)
 const transporter = nodemailer.createTransport({
-  host: "18.215.159.195", // localhost or your server IP
+  host: "mail.devakash.in",
   port: 465,
   secure: true, // Enable TLS
   tls: {
