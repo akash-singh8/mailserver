@@ -42,15 +42,7 @@ const receiveServer = new SMTPServer({
 
   onRcptTo(address, session, callback) {
     console.log("onReceiptTo:", address, session.id);
-    const recipientDomain = address.address.split("@")[1];
-
-    if (recipientDomain === "devakash.in") {
-      console.log("Local recipient:", address.address);
-      return callback();
-    }
-
-    // Reject emails for external domains
-    return callback(new Error("Relaying not allowed"));
+    callback();
   },
 
   onData(stream, session, callback) {
@@ -63,13 +55,21 @@ const receiveServer = new SMTPServer({
     stream.on("end", () => {
       console.log("Received email:", emailData);
 
-      // Store email in database
-      // Auto-reply example
-      sendEmail({
-        from: "hello@devakash.in",
-        to: "cleverakash1@gmail.com",
-        subject: "Message Received",
-        text: "Thank you for your email!",
+      const recipients = session.envelope.rcptTo.map((usr) => usr.address);
+
+      recipients.forEach(async (recipient) => {
+        const rcptDomain = recipient.split("@")[1];
+
+        if (rcptDomain !== "devakash.in") {
+          try {
+            await sendEmail(emailData, recipient);
+          } catch (err) {
+            console.error(`Error sending email to ${recipient}:`, err);
+            // handle errors (e.g., queue for retry) instead of just logging.
+          }
+        } else {
+          console.log("Cannot send email to the same recipient :", recipient);
+        }
       });
 
       callback();
